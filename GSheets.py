@@ -4,11 +4,13 @@ import pandas as pd
 from oauth2client.service_account import ServiceAccountCredentials
 import time
 
+
 class GoogleSheets:
 	def __init__(self, creds_file = 'creds.json', ping_wait = 10):
 
 		# define the scope
-		scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
+		scope = ['https://spreadsheets.google.com/feeds',
+                'https://www.googleapis.com/auth/drive']
 
 		# add credentials to the account
 		creds = ServiceAccountCredentials.from_json_keyfile_name(creds_file, scope)
@@ -99,15 +101,15 @@ class GoogleSheets:
 		return titles_list
 
 if __name__ == "__main__":
-	sheets = GoogleSheets()
-	data = {
-			"Sheet Name": "Thanjavur Beds",
-			"Name":"Fake",
-			"URL":"https://www.google.com/maps/place/Thanjavur+Medical+College/@10.7580923,79.1035782,17z/data=!4m9!1m2!2m1!1sThanjavur+Medical+College!3m5!1s0x3baabf337761a613:0x69900b85db55755e!8m2!3d10.7586!4d79.1066!15sChlUaGFuamF2dXIgTWVkaWNhbCBDb2xsZWdlWiwKD21lZGljYWwgY29sbGVnZSIZdGhhbmphdnVyIG1lZGljYWwgY29sbGVnZZIBDm1lZGljYWxfc2Nob29ssAEA",
-			"COVID Beds": 226,
-			"Oxygen Beds":372,
-			"ICU": 200,
-			"LAST UPDATED": "2021-05-03 15:24:37"
-		}
-	
-	sheets.get_all_sheets()
+    sheets = GoogleSheets()
+    data = {
+        "Sheet Name": "Thanjavur Beds",
+        "Name": "Fake",
+        "URL": "https://www.google.com/maps/place/Thanjavur+Medical+College/@10.7580923,79.1035782,17z/data=!4m9!1m2!2m1!1sThanjavur+Medical+College!3m5!1s0x3baabf337761a613:0x69900b85db55755e!8m2!3d10.7586!4d79.1066!15sChlUaGFuamF2dXIgTWVkaWNhbCBDb2xsZWdlWiwKD21lZGljYWwgY29sbGVnZSIZdGhhbmphdnVyIG1lZGljYWwgY29sbGVnZZIBDm1lZGljYWxfc2Nob29ssAEA",
+        "COVID Beds": 226,
+        "Oxygen Beds": 372,
+        "ICU": 200,
+        "LAST UPDATED": "2021-05-03 15:24:37"
+    }
+
+    sheets.get_all_sheets()
