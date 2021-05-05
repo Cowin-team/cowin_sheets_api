@@ -1,8 +1,11 @@
 import json
 from flask import Flask, request, jsonify
 from GSheets import GoogleSheets
+from flask_cors import CORS, cross_origin
 app = Flask(__name__)
 
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 sheets = GoogleSheets()
 
 @app.route('/update',methods = ['POST'])
