@@ -2,7 +2,7 @@
 An API to update the google sheets when a request is received.
 It is developed in python
 
-# Packages
+## Packages
 
 Project is created with:
 * oauth2client: 4.1.3
@@ -14,13 +14,13 @@ Project is created with:
 Install the packages using pip:
 ```pip install -r requirements.txt```
 
-# Setup
+## Setup
 
 The api can be started by running the command
 `python api.py`
 This starts the api on the local host with the available port
 
-# Data formats
+## Data formats
 The api accepts POST request to `http:localhost:port/upload`
 
 The data for the Beds google sheets takes all the columns and the sheet name. The Sheet Name and the Name is a required feild.
@@ -32,7 +32,7 @@ The data for the Beds google sheets takes all the columns and the sheet name. Th
         "COVID Beds": 226,
         "Oxygen Beds":372,
         "ICU": 200,
-        "Ventilator Beds": 500
+        "Ventilator Beds": 500,
         "LAST UPDATED": "2021-05-03 15:24:37",		
     }
 ```
