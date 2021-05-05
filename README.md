@@ -36,3 +36,9 @@ The data for the Beds google sheets takes all the columns and the sheet name. Th
         "LAST UPDATED": "2021-05-03 15:24:37",		
     }
 ```
+
+## Deploy
+
+```
+gcloud app deploy
+```
