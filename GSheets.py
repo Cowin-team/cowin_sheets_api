@@ -95,4 +95,4 @@ if __name__ == "__main__":
             "LAST UPDATED": "2021-05-03 15:24:37"
         }
     
-    sheets.update(data,)
+    sheets.get_all_sheets()
