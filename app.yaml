@@ -1,0 +1,17 @@
+runtime: python
+
+entrypoint: gunicorn -b :$PORT main:app
+
+env: flex
+
+runtime_config:
+  python_version: 3
+
+instance_class: F1
+
+env_variables:
+  ENVIRONMENT: "release"
+  VERSION: "1.0"
+  PROJECT_ID: "true-source-312806"
+  LOCATION: "asia-southeast2"
+  FLASK_APP: "main.py"

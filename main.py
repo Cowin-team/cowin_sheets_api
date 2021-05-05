@@ -8,6 +8,14 @@ cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 sheets = GoogleSheets()
 
+@app.route('/',methods = ['GET'])
+def home():
+    return "Cowin Sheets API"
+
+@app.route('/health',methods = ['GET'])
+def health():
+    return "OK"
+
 @app.route('/update',methods = ['POST'])
 @cross_origin()
 def get_record():
