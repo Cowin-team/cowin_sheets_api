@@ -26,17 +26,10 @@ def get_record():
 		# print("\n\n",request.data,"\n\n")
 		record = json.loads(request.data)
 		resp = sheets.update(record)
+		print('resp', resp)
 		return jsonify(resp)
-# def _build_cors_prelight_response():
-# 	response = make_response()
-# 	response.headers.add("Access-Control-Allow-Origin", "*")
-# 	response.headers.add('Access-Control-Allow-Headers', "*")
-# 	response.headers.add('Access-Control-Allow-Methods', "*")
-# 	return response
-# 
-# def _corsify_actual_response(response):
-# 	response.headers.add("Access-Control-Allow-Origin", "*")
-# 	return response
+	else:
+		return {"error": "error occurred"}
 
 if __name__ == '__main__':
    app.run(debug = True)
