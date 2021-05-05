@@ -2,9 +2,10 @@
 import gspread
 import pandas as pd
 from oauth2client.service_account import ServiceAccountCredentials
-												
+import time
+
 class GoogleSheets:
-    def __init__(self, creds_file = 'creds.json'):
+    def __init__(self, creds_file = 'creds.json', ping_wait = 10):
 
         # define the scope
         scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
@@ -14,6 +15,7 @@ class GoogleSheets:
 
         # authorize the clientsheet 
         self.client = gspread.authorize(creds)
+        self.ping_wait = 10
 
     def get_sheet(self, sheet_name):
         # get the instance of the Spreadsheet
@@ -62,6 +64,8 @@ class GoogleSheets:
                 sheet_instance.delete_row(int(index_list[0])+2)
                     # Update the row values of the sheets with the diff
                 sheet_instance.insert_row(row.values[0].tolist(), index=int(index_list[0])+2)
+                time.sleep(self.ping_wait)
+                return {"resp":"Sucess"}
         else:
             sheet_columns = list(records_df.columns)
             row_values = []
@@ -71,9 +75,11 @@ class GoogleSheets:
                 else:
                     row_values.append(None)
             
+            sheet_instance.insert_row(row_values, index=len(records_df.index)+2)
+            time.sleep(self.ping_wait)
+            return {"resp":"Sucess"}
             # Delete the old row and push the new one
-            print(sheet_instance.insert_row(row_values, index=len(records_df.index)+2))
-        # print(sheet_instance.get_col_values())
+            
         
     def get_all_sheets(self):
         titles_list = []
