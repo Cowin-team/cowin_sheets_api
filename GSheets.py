@@ -61,11 +61,14 @@ class GoogleSheets:
                         isDiff = True
             
             if isDiff:
-                sheet_instance.delete_row(int(index_list[0])+2)
-                    # Update the row values of the sheets with the diff
-                sheet_instance.insert_row(row.values[0].tolist(), index=int(index_list[0])+2)
-                time.sleep(self.ping_wait)
-                return {"resp":"Sucess"}
+            	try:
+	                sheet_instance.delete_row(int(index_list[0])+2)
+	                sheet_instance.insert_row(row.values[0].tolist(), index=int(index_list[0])+2)
+	                time.sleep(self.ping_wait)
+	                return {"resp":"Sucess"}
+            	except Exception as e:
+            		
+                	return {"error":e}
         else:
             sheet_columns = list(records_df.columns)
             row_values = []
@@ -75,10 +78,13 @@ class GoogleSheets:
                 else:
                     row_values.append(None)
             
-            sheet_instance.insert_row(row_values, index=len(records_df.index)+2)
-            time.sleep(self.ping_wait)
-            return {"resp":"Sucess"}
-            # Delete the old row and push the new one
+            try:
+	            sheet_instance.insert_row(row_values, index=len(records_df.index)+2)
+	            time.sleep(self.ping_wait)
+	            return {"resp":"Sucess"}
+	        except Exception as e:
+
+                return {"error":e}
             
         
     def get_all_sheets(self):
