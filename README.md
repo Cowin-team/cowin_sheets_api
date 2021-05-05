@@ -21,7 +21,7 @@ The api can be started by running the command
 This starts the api on the local host with the available port
 
 ## Data formats
-The api accepts POST request to `http:localhost:port/upload`
+The api accepts POST request to `http:localhost:port/update`
 
 The data for the Beds google sheets takes all the columns and the sheet name. The Sheet Name and the Name is a required feild.
 ``` json
