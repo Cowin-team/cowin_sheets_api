@@ -26,7 +26,7 @@ The api accepts POST request to `http:localhost:port/update` and `http:localhost
 For single row update use `http:localhost:port/update` and for bulk update use  `http:localhost:port/updateBulk`. The bulk update takes a list of JSON, where each JSON follows the template given below
 
 
-The data shall contain all the column from the COVID Bed Google Sheets. The 'Sheet Name' and the 'Name' are required feild.
+The data shall contain all the column from the COVID Bed Google Sheets. The 'Sheet Name' and the 'Name' are required feild. The LAST UPDATED should be in `%Y-%m-%d %H:%M:%S` format
 ``` json
     {
         "Sheet Name": "Thanjavur Beds",

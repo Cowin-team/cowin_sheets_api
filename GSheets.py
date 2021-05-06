@@ -3,7 +3,7 @@ import gspread
 import pandas as pd
 from oauth2client.service_account import ServiceAccountCredentials
 import time
-
+from datetime import datetime
 
 class GoogleSheets:
 	def __init__(self, creds_file = 'creds.json', ping_wait = 10):
@@ -61,8 +61,9 @@ class GoogleSheets:
 			return "Error: Sheets didnt load properly"
 
 		try:
-			# print(records_df)
+			records_df['LAST UPDATED'] = pd.to_datetime(records_df['LAST UPDATED'], infer_datetime_format=True)
 			index_list = records_df[(records_df['Name'] == data['Name'])].index
+			isUpdate = records_df['LAST UPDATED'][index_list[0]] < datetime.strptime(data['LAST UPDATED'], "%Y-%m-%d %H:%M:%S")
 			# # check if the data already exists
 			if (len(index_list)):
 				isDiff = False
@@ -74,8 +75,8 @@ class GoogleSheets:
 						if row[col].values[0] != data[col]:
 							row[col] = data[col]
 							isDiff = True
-				
-				if isDiff:
+
+				if isDiff and isUpdate:
 					try:
 						sheet_instance.delete_row(int(index_list[0])+2)
 						sheet_instance.insert_row(row.values[0].tolist(), index=int(index_list[0])+2)
@@ -83,6 +84,8 @@ class GoogleSheets:
 						return {"resp":"Sucess"}
 					except Exception as e:
 						return "Error: Unable to delete or inserting row"
+				else:
+					return{"resp":"The sheet has the latest update, request rejected"}
 			else:
 				sheet_columns = list(records_df.columns)
 				row_values = []
@@ -114,13 +117,13 @@ class GoogleSheets:
 if __name__ == "__main__":
     sheets = GoogleSheets()
     data = {
-        "Sheet Name": "Thanjavur Beds",
+        "Sheet Name": "Tiruvannamalai Beds",
         "Name": "Fake",
         "URL": "https://www.google.com/maps/place/Thanjavur+Medical+College/@10.7580923,79.1035782,17z/data=!4m9!1m2!2m1!1sThanjavur+Medical+College!3m5!1s0x3baabf337761a613:0x69900b85db55755e!8m2!3d10.7586!4d79.1066!15sChlUaGFuamF2dXIgTWVkaWNhbCBDb2xsZWdlWiwKD21lZGljYWwgY29sbGVnZSIZdGhhbmphdnVyIG1lZGljYWwgY29sbGVnZZIBDm1lZGljYWxfc2Nob29ssAEA",
         "COVID Beds": 226,
         "Oxygen Beds": 372,
-        "ICU": 200,
-        "LAST UPDATED": "2021-05-03 15:24:37"
+        "ICU": 20,
+        "LAST UPDATED": "2021-05-05 15:25:37"
     }
 
-    sheets.get_all_sheets()
+    print(sheets.update(data))
