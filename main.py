@@ -24,7 +24,20 @@ def health():
 def get_record():
     if request.method == "POST":  # The actual request following the preflight
         record = json.loads(request.data)
+        print(record)
         resp = sheets.update(record)
+        return handle_response(resp)
+    
+    return handle_response({"error": "error occurred"})
+
+
+
+@app.route('/updateBulk', methods=['POST'])
+@cross_origin()
+def get_bulk_record():
+    if request.method == "POST":  # The actual request following the preflight
+        record = json.loads(request.data)
+        resp = sheets.update_bulk(record)
         return handle_response(resp)
     
     return handle_response({"error": "error occurred"})
