@@ -17,7 +17,7 @@ Install the packages using pip:
 ## Setup
 
 The api can be started by running the command
-`python api.py`
+`python main.py`
 This starts the api on the local host with the available port
 
 ## Data formats

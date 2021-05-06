@@ -8,23 +8,26 @@ cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 sheets = GoogleSheets()
 
-@app.route('/',methods = ['GET'])
+
+@app.route('/', methods=['GET'])
 def home():
     return "Cowin Sheets API"
 
-@app.route('/health',methods = ['GET'])
+
+@app.route('/health', methods=['GET'])
 def health():
     return "OK"
 
-@app.route('/update',methods = ['POST'])
+
+@app.route('/update', methods=['POST'])
 @cross_origin()
 def get_record():
-	
-	if request.method == "POST": # The actual request following the preflight
-		# print("\n\n",request.data,"\n\n")
-		record = json.loads(request.data)
-		resp = sheets.update(record)
-		return handle_response(resp)
+    if request.method == "POST":  # The actual request following the preflight
+        record = json.loads(request.data)
+        resp = sheets.update(record)
+        return handle_response(resp)
+    
+    return handle_response({"error": "error occurred"})
 
 
 def handle_response(response={}, status=200):
