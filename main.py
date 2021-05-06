@@ -31,7 +31,7 @@ def get_record():
 
 
 def handle_response(response={}, status=200):
-    if "Error" in response:
+    if "error" in response:
         return make_response(jsonify(response)), 500 if status == 200 else status
     return make_response(jsonify(response)), status
 

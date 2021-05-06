@@ -84,7 +84,6 @@ class GoogleSheets:
 
                 for key in sheet_columns:
                     if key in data.keys():
-                        rows_to_update += 1
                         row_values.append(data[key])
                     else:
                         row_values.append(None)
@@ -92,7 +91,7 @@ class GoogleSheets:
                 try:
                     sheet_instance.insert_row(
                         row_values, index=len(records_df.index)+2)
-                    return {"resp": "Sucess"}
+                    return {"status": "Sucess"}
                 except Exception as e:
                     return {"error": "Unable to insert a new row"}
 
