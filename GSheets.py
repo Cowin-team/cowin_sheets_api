@@ -50,6 +50,7 @@ class GoogleSheets:
             # convert the json to dataframe
             records_df = pd.DataFrame.from_dict(records_data)
         except Exception as e:
+            print(e)
             return {"error": "Sheets didnt load properly"}
 
         try:
@@ -75,6 +76,7 @@ class GoogleSheets:
                             row.values[0].tolist(), index=int(index_list[0])+2)
                         return {"status": "Success"}
                     except Exception as e:
+                        print(e)
                         return {"error": "Unable to delete or inserting row"}
                 else:
                     return {"status": "No changes in data since last update"}
@@ -93,6 +95,7 @@ class GoogleSheets:
                         row_values, index=len(records_df.index)+2)
                     return {"status": "Sucess"}
                 except Exception as e:
+                    print(e)
                     return {"error": "Unable to insert a new row"}
 
         except Exception as e:
