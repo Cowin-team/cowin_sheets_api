@@ -60,50 +60,54 @@ class GoogleSheets:
 		except Exception as e:
 			return "Error: Sheets didnt load properly"
 
-		try:
+		# try:
+		if data['Check LAST UPDATED']:
 			records_df['LAST UPDATED'] = pd.to_datetime(records_df['LAST UPDATED'], infer_datetime_format=True)
-			index_list = records_df[(records_df['Name'] == data['Name'])].index
-			isUpdate = records_df['LAST UPDATED'][index_list[0]] < datetime.strptime(data['LAST UPDATED'], "%Y-%m-%d %H:%M:%S")
-			# # check if the data already exists
-			if (len(index_list)):
-				isDiff = False
-				row = records_df[records_df['Name'] == data['Name']]
-				row_cols = row.columns
-				for col in row_cols:
-					if col in data.keys():
-						# Check if there is a diff between the data and the sheet for this row
-						if row[col].values[0] != data[col]:
-							row[col] = data[col]
-							isDiff = True
+		index_list = records_df[(records_df['Name'] == data['Name'])].index
+		# # check if the data already exists
+		if (len(index_list)):
 
-				if isDiff and isUpdate:
-					try:
-						sheet_instance.delete_row(int(index_list[0])+2)
-						sheet_instance.insert_row(row.values[0].tolist(), index=int(index_list[0])+2)
-						time.sleep(self.ping_wait)
-						return {"resp":"Sucess"}
-					except Exception as e:
-						return "Error: Unable to delete or inserting row"
-				else:
-					return{"resp":"The sheet has the latest update, request rejected"}
-			else:
-				sheet_columns = list(records_df.columns)
-				row_values = []
-				for key in sheet_columns:
-					if key in data.keys():
-						row_values.append(data[key])
-					else:
-						row_values.append(None)
-				
+			isUpdate = True
+			if data['Check LAST UPDATED']:
+				isUpdate = records_df['LAST UPDATED'][index_list[0]] < datetime.strptime(data['LAST UPDATED'], "%Y-%m-%d %H:%M:%S")
+			isDiff = False
+			row = records_df[records_df['Name'] == data['Name']]
+			row_cols = row.columns
+			for col in row_cols:
+				if col in data.keys():
+					# Check if there is a diff between the data and the sheet for this row
+					if row[col].values[0] != data[col]:
+						row[col] = data[col]
+						isDiff = True
+
+			if isDiff and isUpdate:
 				try:
-					sheet_instance.insert_row(row_values, index=len(records_df.index)+2)
+					sheet_instance.delete_row(int(index_list[0])+2)
+					sheet_instance.insert_row(row.values[0].tolist(), index=int(index_list[0])+2)
 					time.sleep(self.ping_wait)
 					return {"resp":"Sucess"}
 				except Exception as e:
-					return "Error:Unable to insert a new row"
+					return "Error: Unable to delete or inserting row"
+			else:
+				return{"resp":"The sheet has the latest update, request rejected"}
+		else:
+			sheet_columns = list(records_df.columns)
+			row_values = []
+			for key in sheet_columns:
+				if key in data.keys():
+					row_values.append(data[key])
+				else:
+					row_values.append(None)
 			
-		except Exception as e:
-			return "Error: Unable to process the Gsheet or the data"
+			try:
+				sheet_instance.insert_row(row_values, index=len(records_df.index)+2)
+				time.sleep(self.ping_wait)
+				return {"resp":"Sucess"}
+			except Exception as e:
+				return "Error:Unable to insert a new row"
+			
+		# except Exception as e:
+		# 	return "Error: Unable to process the Gsheet or the data"
 			
 		
 	def get_all_sheets(self):
@@ -117,13 +121,14 @@ class GoogleSheets:
 if __name__ == "__main__":
     sheets = GoogleSheets()
     data = {
-        "Sheet Name": "Tiruvannamalai Beds",
+        "Sheet Name": "Pune Beds",
         "Name": "Fake",
         "URL": "https://www.google.com/maps/place/Thanjavur+Medical+College/@10.7580923,79.1035782,17z/data=!4m9!1m2!2m1!1sThanjavur+Medical+College!3m5!1s0x3baabf337761a613:0x69900b85db55755e!8m2!3d10.7586!4d79.1066!15sChlUaGFuamF2dXIgTWVkaWNhbCBDb2xsZWdlWiwKD21lZGljYWwgY29sbGVnZSIZdGhhbmphdnVyIG1lZGljYWwgY29sbGVnZZIBDm1lZGljYWxfc2Nob29ssAEA",
         "COVID Beds": 226,
         "Oxygen Beds": 372,
         "ICU": 20,
-        "LAST UPDATED": "2021-05-05 15:25:37"
+        "LAST UPDATED": "2021-05-06 15:25:37", 
+		"Check LAST UPDATED": True
     }
 
     print(sheets.update(data))

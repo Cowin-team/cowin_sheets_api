@@ -26,7 +26,12 @@ The api accepts POST request to `http:localhost:port/update` and `http:localhost
 For single row update use `http:localhost:port/update` and for bulk update use  `http:localhost:port/updateBulk`. The bulk update takes a list of JSON, where each JSON follows the template given below
 
 
-The data shall contain all the column from the COVID Bed Google Sheets. The 'Sheet Name' and the 'Name' are required feild. The LAST UPDATED should be in `%Y-%m-%d %H:%M:%S` format
+The data shall contain all the column from the COVID Bed Google Sheets. 
+
+Required feilds: `Sheet Name`, `Name` and  `Check LAST UPDATED` are required feilds. 
+The LAST UPDATED should be in `%Y-%m-%d %H:%M:%S` format and the Check LAST UPDATED should be `True` or `False`. 
+
+The Check LAST UPDATED flag makes the backend check and update the LAST UPDATED value,  if the update time of current request is more recent than the value in the sheet
 ``` json
     {
         "Sheet Name": "Thanjavur Beds",
@@ -36,7 +41,8 @@ The data shall contain all the column from the COVID Bed Google Sheets. The 'She
         "Oxygen Beds":372,
         "ICU": 200,
         "Ventilator Beds": 500,
-        "LAST UPDATED": "2021-05-03 15:24:37",		
+        "LAST UPDATED": "2021-05-03 15:24:37",
+		"Check LAST UPDATED": False		
     }
 ```
 
