@@ -60,54 +60,54 @@ class GoogleSheets:
 		except Exception as e:
 			return "Error: Sheets didnt load properly"
 
-		# try:
-		if data['Check LAST UPDATED']:
-			records_df['LAST UPDATED'] = pd.to_datetime(records_df['LAST UPDATED'], infer_datetime_format=True)
-		index_list = records_df[(records_df['Name'] == data['Name'])].index
-		# # check if the data already exists
-		if (len(index_list)):
-
-			isUpdate = True
+		try:
 			if data['Check LAST UPDATED']:
-				isUpdate = records_df['LAST UPDATED'][index_list[0]] < datetime.strptime(data['LAST UPDATED'], "%Y-%m-%d %H:%M:%S")
-			isDiff = False
-			row = records_df[records_df['Name'] == data['Name']]
-			row_cols = row.columns
-			for col in row_cols:
-				if col in data.keys():
-					# Check if there is a diff between the data and the sheet for this row
-					if row[col].values[0] != data[col]:
-						row[col] = data[col]
-						isDiff = True
+				records_df['LAST UPDATED'] = pd.to_datetime(records_df['LAST UPDATED'], infer_datetime_format=True)
+			index_list = records_df[(records_df['Name'] == data['Name'])].index
+			# # check if the data already exists
+			if (len(index_list)):
 
-			if isDiff and isUpdate:
+				isUpdate = False
+				if data['Check LAST UPDATED']:
+					isUpdate = records_df['LAST UPDATED'][index_list[0]] < datetime.strptime(data['LAST UPDATED'], "%Y-%m-%d %H:%M:%S")
+				isDiff = False
+				row = records_df[records_df['Name'] == data['Name']]
+				row_cols = row.columns
+				for col in row_cols:
+					if col in data.keys():
+						# Check if there is a diff between the data and the sheet for this row
+						if row[col].values[0] != data[col]:
+							row[col] = data[col]
+							isDiff = True
+
+				if isDiff and isUpdate:
+					try:
+						sheet_instance.delete_row(int(index_list[0])+2)
+						sheet_instance.insert_row(row.values[0].tolist(), index=int(index_list[0])+2)
+						time.sleep(self.ping_wait)
+						return {"resp":"Sucess"}
+					except Exception as e:
+						return "Error: Unable to delete or inserting row"
+				else:
+					return{"resp":"The sheet has the latest update, request rejected"}
+			else:
+				sheet_columns = list(records_df.columns)
+				row_values = []
+				for key in sheet_columns:
+					if key in data.keys():
+						row_values.append(data[key])
+					else:
+						row_values.append(None)
+				
 				try:
-					sheet_instance.delete_row(int(index_list[0])+2)
-					sheet_instance.insert_row(row.values[0].tolist(), index=int(index_list[0])+2)
+					sheet_instance.insert_row(row_values, index=len(records_df.index)+2)
 					time.sleep(self.ping_wait)
 					return {"resp":"Sucess"}
 				except Exception as e:
-					return "Error: Unable to delete or inserting row"
-			else:
-				return{"resp":"The sheet has the latest update, request rejected"}
-		else:
-			sheet_columns = list(records_df.columns)
-			row_values = []
-			for key in sheet_columns:
-				if key in data.keys():
-					row_values.append(data[key])
-				else:
-					row_values.append(None)
+					return "Error:Unable to insert a new row"
 			
-			try:
-				sheet_instance.insert_row(row_values, index=len(records_df.index)+2)
-				time.sleep(self.ping_wait)
-				return {"resp":"Sucess"}
-			except Exception as e:
-				return "Error:Unable to insert a new row"
-			
-		# except Exception as e:
-		# 	return "Error: Unable to process the Gsheet or the data"
+		except Exception as e:
+			return "Error: Unable to process the Gsheet or the data"
 			
 		
 	def get_all_sheets(self):
