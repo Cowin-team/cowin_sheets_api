@@ -20,18 +20,21 @@ The api can be started by running the command
 `python main.py`
 This starts the api on the local host with the available port
 
+## Usage Instruction
+
+* The api accepts POST request to `http:localhost:port/update` and `http:localhost:port/updateBulk`
+* For single row update use `http:localhost:port/update` and for bulk update use  `http:localhost:port/updateBulk`. 
+* The `http:localhost:port/update` accepts a JSON while the bulk update takes a list of JSON, where each JSON follows the template given below.
+* If using `http:localhost:port/update`, successive api call should have time interval of 2 seconds. 
+* 
+
 ## Data formats
-The api accepts POST request to `http:localhost:port/update` and `http:localhost:port/updateBulk`
 
-For single row update use `http:localhost:port/update` and for bulk update use  `http:localhost:port/updateBulk`. The bulk update takes a list of JSON, where each JSON follows the template given below
+* The data can contain all the column from the COVID Bed Google Sheets. 
+* Required feilds: `Sheet Name`, `Name` and  `Check LAST UPDATED`. Rest are optional
+* The Check LAST UPDATED should be `True` or `False`. 
+* If Check LAST UPDATED flag is true, the dataformat for LAST UPDATED should be strictly `%Y-%m-%d %H:%M:%S`.
 
-
-The data shall contain all the column from the COVID Bed Google Sheets. 
-
-Required feilds: `Sheet Name`, `Name` and  `Check LAST UPDATED` are required feilds. 
-The LAST UPDATED should be in `%Y-%m-%d %H:%M:%S` format and the Check LAST UPDATED should be `True` or `False`. 
-
-The Check LAST UPDATED flag makes the backend check and update the LAST UPDATED value,  if the update time of current request is more recent than the value in the sheet
 ``` json
     {
         "Sheet Name": "Thanjavur Beds",
