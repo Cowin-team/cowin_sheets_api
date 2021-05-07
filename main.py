@@ -2,6 +2,7 @@ import json
 from flask import Flask, request, jsonify, make_response
 from GSheets import GoogleSheets
 from flask_cors import CORS, cross_origin
+import time
 app = Flask(__name__)
 
 cors = CORS(app)
@@ -24,7 +25,6 @@ def health():
 def get_record():
     if request.method == "POST":  # The actual request following the preflight
         record = json.loads(request.data)
-        print(record)
         resp = sheets.update(record)
         return handle_response(resp)
     

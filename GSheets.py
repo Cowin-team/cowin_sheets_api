@@ -40,13 +40,15 @@ class GoogleSheets:
 		self.ping_wait = 1
 		for data in bulk_data:
 			resp = self.update(data)
+
+			time.sleep(self.ping_wait)
 			if "Error" in resp:
 				return resp
-			time.sleep(10)
 
-		return {"resp":"Sucess"}
+		return {"Sucess":bulk_data}
+
 	def update(self, data):
-		
+		print("\n\n", data, "\n\n")
 		try:
 			# get the instance of the Spreadsheet
 			sheet = self.client.open(data["Sheet Name"])
@@ -58,12 +60,15 @@ class GoogleSheets:
 			# convert the json to dataframe
 			records_df = pd.DataFrame.from_dict(records_data)
 		except Exception as e:
-			return "Error: Sheets didnt load properly"
+			return "Error Reading sheets: "  + str(e)
 
 		try:
 			if data['Check LAST UPDATED']:
 				records_df['LAST UPDATED'] = pd.to_datetime(records_df['LAST UPDATED'], infer_datetime_format=True)
 			index_list = records_df[(records_df['Name'] == data['Name'])].index
+		except Exception as e:
+			return "Error in format of LAST UPDATED in google sheets or not able to compare Name of hospital: "  + data['Name'] + "\nerror message:" + str(e)
+		try:
 			# # check if the data already exists
 			if (len(index_list)):
 
@@ -87,7 +92,7 @@ class GoogleSheets:
 						time.sleep(self.ping_wait)
 						return {"resp":"Sucess"}
 					except Exception as e:
-						return "Error: Unable to delete or inserting row"
+						return "Error Editing editing row " + str(data['Name']) + "\n" + str(e)
 				else:
 					return{"resp":"The sheet has the latest update, request rejected"}
 			else:
@@ -102,12 +107,12 @@ class GoogleSheets:
 				try:
 					sheet_instance.insert_row(row_values, index=len(records_df.index)+2)
 					time.sleep(self.ping_wait)
-					return {"resp":"Sucess"}
+					return {"Sucess":data}
 				except Exception as e:
-					return "Error:Unable to insert a new row"
+					return "Error Inserting new row" + str(data['Name']) + "  " + str(e)
 			
 		except Exception as e:
-			return "Error: Unable to process the Gsheet or the data"
+			return "Error: "  + str(e)
 			
 		
 	def get_all_sheets(self):
