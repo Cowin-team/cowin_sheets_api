@@ -15,10 +15,10 @@ Install the packages using pip:
 ```pip install -r requirements.txt```
 
 ## Setup
-
-The api can be started by running the command
-`python main.py`
-This starts the api on the local host with the available port
+* The api needs credentials to acess the google sheets, the credential can be obtained by contacting the developers. 
+* The credentials should be in creds.json file in the root directory of the repository.
+* The api can be started by running the command
+    `python main.py`
 
 ## Usage Instruction
 
