@@ -19,22 +19,6 @@ class GoogleSheets:
 		self.client = gspread.authorize(creds)
 		self.ping_wait = ping_wait
 
-	def get_sheet(self, sheet_name):
-		# get the instance of the Spreadsheet
-		sheet = self.client.open(sheet_name)
-
-		# get the first sheet of the Spreadsheet
-		sheet_instance = sheet.get_worksheet(0)
-		# get all the records of the data
-		records_data = sheet_instance.get_all_records()
-		# convert the json to dataframe
-		records_df = pd.DataFrame.from_dict(records_data)
-
-		# view the top records
-		print(records_df.head())
-
-		return records_df
-
 	def update_bulk(self, bulk_data):
 
 		self.ping_wait = 1
@@ -65,9 +49,13 @@ class GoogleSheets:
 		try:
 			if data['Check LAST UPDATED']:
 				records_df['LAST UPDATED'] = pd.to_datetime(records_df['LAST UPDATED'], infer_datetime_format=True)
-			index_list = records_df[(records_df['Name'] == data['Name'])].index
 		except Exception as e:
-			return "Error in format of LAST UPDATED in google sheets or not able to compare Name of hospital: "  + data['Name'] + "\nerror message:" + str(e)
+			return "Error in format of 'LAST UPDATED' column in google sheets"  + "\nError Message:\t" + str(e)
+		
+		try:
+			index_list = records_df[(records_df['Name'] == data['Name'])].index	
+		except Exception as e:
+			return "Error in comparing the name of hospital of google sheets with the name in the request:\t"  + data['Name'] + "\nError Message:\t" + str(e)
 		try:
 			# # check if the data already exists
 			if (len(index_list)):
@@ -85,14 +73,14 @@ class GoogleSheets:
 							row[col] = data[col]
 							isDiff = True
 
-				if isDiff and isUpdate:
+				if isUpdate:
 					try:
 						sheet_instance.delete_row(int(index_list[0])+2)
 						sheet_instance.insert_row(row.values[0].tolist(), index=int(index_list[0])+2)
 						time.sleep(self.ping_wait)
-						return {"resp":"Sucess"}
+						return {"Sucess": "edited row:\t"+ str(data['Name'])}
 					except Exception as e:
-						return "Error Editing editing row " + str(data['Name']) + "\n" + str(e)
+						return "Error Editing editing row:\t" + str(data['Name']) + "\nError Message:\t" + str(e)
 				else:
 					return{"resp":"The sheet has the latest update, request rejected"}
 			else:
@@ -107,12 +95,12 @@ class GoogleSheets:
 				try:
 					sheet_instance.insert_row(row_values, index=len(records_df.index)+2)
 					time.sleep(self.ping_wait)
-					return {"Sucess":data}
+					return {"Sucess": "Inserted row:\t"+ str(data['Name'])}
 				except Exception as e:
-					return "Error Inserting new row" + str(data['Name']) + "  " + str(e)
+					return "Error Inserting new row:\t" + str(data['Name']) + "\nError Message:\t" + str(e)
 			
 		except Exception as e:
-			return "Error: "  + str(e)
+			return "Error unknown: \nError Message:\t"  + str(e)
 			
 		
 	def get_all_sheets(self):
