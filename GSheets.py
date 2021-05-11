@@ -4,9 +4,10 @@ import pandas as pd
 from oauth2client.service_account import ServiceAccountCredentials
 import time
 from datetime import datetime
+import re
 
 class GoogleSheets:
-	def __init__(self, creds_file = 'creds.json', ping_wait = 10):
+	def __init__(self, creds_file = 'creds.json', ping_wait = 1):
 
 		# define the scope
 		scope = ['https://spreadsheets.google.com/feeds',
@@ -22,7 +23,6 @@ class GoogleSheets:
 
 	def update_bulk(self, bulk_data):
 
-		self.ping_wait = 2
 		for data in bulk_data:
 			resp = self.update(data)
 			print(resp)
@@ -33,7 +33,8 @@ class GoogleSheets:
 		return {"Sucess":bulk_data}
 
 	def update(self, data):
-		print("\n\n", data)
+		print("\n\n", data, "\n")
+		name_alphanumeric = re.sub(r'\W+', '', data['Name'])
 		try:
 			# get the instance of the Spreadsheet
 			sheet = self.client.open(data["Sheet Name"])
@@ -55,7 +56,8 @@ class GoogleSheets:
 		
 		try:
 			if (records_df.empty is not True):
-				index_list = records_df[(records_df['Name'] == data['Name'])].index	
+				records_df['Name'] = records_df.Name.str.replace('[^a-zA-Z0-9]', '')
+				index_list = records_df[(records_df['Name'] == name_alphanumeric)].index	
 			else:
 				index_list = []
 		except Exception as e:
@@ -68,7 +70,7 @@ class GoogleSheets:
 				if data['Check LAST UPDATED']:
 					isUpdate = records_df['LAST UPDATED'][index_list[0]] < datetime.strptime(data['LAST UPDATED'], "%Y-%m-%d %H:%M:%S")
 				isDiff = False
-				row = records_df[records_df['Name'] == data['Name']]
+				row = records_df[records_df['Name'] == name_alphanumeric]
 				row_cols = row.columns
 				for col in row_cols:
 					if col in data.keys():
@@ -76,7 +78,6 @@ class GoogleSheets:
 						if row[col].values[0] != data[col]:
 							row[col] = data[col]
 							isDiff = True
-
 				if isDiff or isUpdate:
 					try:
 						sheet_instance.delete_row(int(index_list[0])+2)
@@ -116,8 +117,8 @@ class GoogleSheets:
 if __name__ == "__main__":
     sheets = GoogleSheets()
     data = {
-        "Sheet Name": "Pune Beds",
-        "Name": "Fake",
+        "Sheet Name": "Thanjavur Beds",
+        "Name": "Rohini Hospital*",
         "URL": "https://www.google.com/maps/place/Thanjavur+Medical+College/@10.7580923,79.1035782,17z/data=!4m9!1m2!2m1!1sThanjavur+Medical+College!3m5!1s0x3baabf337761a613:0x69900b85db55755e!8m2!3d10.7586!4d79.1066!15sChlUaGFuamF2dXIgTWVkaWNhbCBDb2xsZWdlWiwKD21lZGljYWwgY29sbGVnZSIZdGhhbmphdnVyIG1lZGljYWwgY29sbGVnZZIBDm1lZGljYWxfc2Nob29ssAEA",
         "COVID Beds": 226,
         "Oxygen Beds": 372,
@@ -126,4 +127,4 @@ if __name__ == "__main__":
 		"Check LAST UPDATED": True
     }
 
-    print(sheets.get_all_sheets())
+    print(sheets.update(data))
