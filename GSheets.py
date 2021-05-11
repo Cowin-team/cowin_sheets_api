@@ -34,7 +34,7 @@ class GoogleSheets:
 
 	def update(self, data):
 		print("\n\n", data, "\n")
-		name_alphanumeric = re.sub(r'\W+', '', data['Name'])
+		name_alphanumeric = re.sub(r'\W+', '', data['Name']).lower()
 		try:
 			# get the instance of the Spreadsheet
 			sheet = self.client.open(data["Sheet Name"])
@@ -57,6 +57,7 @@ class GoogleSheets:
 		try:
 			if (records_df.empty is not True):
 				records_df['Name'] = records_df.Name.str.replace('[^a-zA-Z0-9]', '')
+				records_df['Name'] = records_df.Name.str.lower()
 				index_list = records_df[(records_df['Name'] == name_alphanumeric)].index	
 			else:
 				index_list = []
