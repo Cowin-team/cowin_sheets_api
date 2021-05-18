@@ -34,12 +34,15 @@ Install the packages using pip:
 * Required feilds: `Sheet Name`, `Name` and  `Check LAST UPDATED`. Rest are optional
 * The Check LAST UPDATED should be `True` or `False`. 
 * If Check LAST UPDATED flag is true, the dataformat for LAST UPDATED should be strictly `%Y-%m-%d %H:%M:%S`.
+* The address is an optional feild, if address is given it should contain the Name of the hospital and the address with comma seperation.
+
+## Examples 
 
 ``` json
     {
         "Sheet Name": "Thanjavur Beds",
         "Name":"Fake",
-        "URL":"https://www.google.com/maps/place/Thanjavur+Medical+College/@10.7580923,79.1035782,17z/data=!4m9!1m2!2m1!1sThanjavur+Medical+College!3m5!1s0x3baabf337761a613:0x69900b85db55755e!8m2!3d10.7586!4d79.1066!15sChlUaGFuamF2dXIgTWVkaWNhbCBDb2xsZWdlWiwKD21lZGljYWwgY29sbGVnZSIZdGhhbmphdnVyIG1lZGljYWwgY29sbGVnZZIBDm1lZGljYWxfc2Nob29ssAEA",
+        "Address":"Government Hospital, Kinathukadavu, Tamil Nadu 642109, India",
         "COVID Beds": 226,
         "Oxygen Beds":372,
         "ICU": 200,
@@ -48,7 +51,6 @@ Install the packages using pip:
 		"Check LAST UPDATED": False		
     }
 ```
-
 ## Deploy
 
 ```

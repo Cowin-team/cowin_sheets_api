@@ -5,6 +5,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 import time
 from datetime import datetime
 import re
+import requests
 
 class GoogleSheets:
 	def __init__(self, creds_file = 'creds.json', ping_wait = 1):
@@ -15,6 +16,14 @@ class GoogleSheets:
 
 		# add credentials to the account
 		creds = ServiceAccountCredentials.from_json_keyfile_name(creds_file, scope)
+
+		self.params = {	'address': '',
+						'sensor': 'false',
+						'region': 'india',
+						'key': 'AIzaSyBGrgbjTkmWhyjyyGq8fWzigE6xECz1Mcc'
+					}
+		self.GOOGLE_MAPS_API_URL = 'https://maps.googleapis.com/maps/api/geocode/json'
+		self.map_URL = 'https://www.google.com/maps/'
 
 		# authorize the clientsheet 
 		self.client = gspread.authorize(creds)
@@ -90,13 +99,35 @@ class GoogleSheets:
 					return{"resp":"The sheet has the latest update, request rejected"}
 			else:
 				# sheet_columns = list(records_df.columns)
+
+				geodata = dict()
+				self.params['address'] = data["Address"]
+				try:
+					req = requests.get(self.GOOGLE_MAPS_API_URL, params=self.params)
+					res = req.json()
+					# Use the first result
+					result = res['results'][0]
+
+					geodata['lat'] = result['geometry']['location']['lat']
+					geodata['lng'] = result['geometry']['location']['lng']
+					geodata['address'] = result['formatted_address']
+					self.map_URL = self.map_URL + '@' + str(geodata['lat']) + ',' + str(geodata['lng']) + ',16z'
+				except Exception as e:
+					return "Error trying to get latt and long " + str(data['Name']) + "\nError Message:\t" + str(e)
+
 				row_values = []
 				for key in self.sheet_columns:
 					if key in data.keys():
 						row_values.append(data[key])
 					else:
-						row_values.append(None)
-				
+						if geodata and key == 'lat':
+							row_values.append(geodata['lat'])
+						elif geodata and key == 'Long':
+							row_values.append(geodata['lng'])
+						elif geodata and key == 'URL':
+							row_values.append(self.map_URL)
+						else:
+							row_values.append(None)
 				try:
 					sheet_instance.insert_row(row_values, index=len(records_df.index)+2)
 					return {"Sucess": "Inserted row: "+ str(data['Name'])}
@@ -119,8 +150,9 @@ if __name__ == "__main__":
     sheets = GoogleSheets()
     data = {
         "Sheet Name": "Thanjavur Beds",
-        "Name": "Rohini Hospital*",
-        "URL": "https://www.google.com/maps/place/Thanjavur+Medical+College/@10.7580923,79.1035782,17z/data=!4m9!1m2!2m1!1sThanjavur+Medical+College!3m5!1s0x3baabf337761a613:0x69900b85db55755e!8m2!3d10.7586!4d79.1066!15sChlUaGFuamF2dXIgTWVkaWNhbCBDb2xsZWdlWiwKD21lZGljYWwgY29sbGVnZSIZdGhhbmphdnVyIG1lZGljYWwgY29sbGVnZZIBDm1lZGljYWxfc2Nob29ssAEA",
+        "Name": "Rohiniiii Hospital*",
+		"Address": 'Government Hospital, Kinathukadavu, Tamil Nadu 642109, India',
+        # "URL": "https://www.google.com/maps/place/Thanjavur+Medical+College/@10.7580923,79.1035782,17z/data=!4m9!1m2!2m1!1sThanjavur+Medical+College!3m5!1s0x3baabf337761a613:0x69900b85db55755e!8m2!3d10.7586!4d79.1066!15sChlUaGFuamF2dXIgTWVkaWNhbCBDb2xsZWdlWiwKD21lZGljYWwgY29sbGVnZSIZdGhhbmphdnVyIG1lZGljYWwgY29sbGVnZZIBDm1lZGljYWxfc2Nob29ssAEA",
         "COVID Beds": 226,
         "Oxygen Beds": 372,
         "ICU": 20,
@@ -128,4 +160,4 @@ if __name__ == "__main__":
 		"Check LAST UPDATED": True
     }
 
-    print(sheets.update(data))
+    sheets.update(data)
