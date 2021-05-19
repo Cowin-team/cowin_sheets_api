@@ -46,6 +46,7 @@ class GoogleSheets:
 		name_alphanumeric = re.sub(r'\W+', '', data['Name']).lower()
 		try:
 			# get the instance of the Spreadsheet
+
 			sheet = self.client.open(data["Sheet Name"])
 
 			# get the first sheet of the Spreadsheet
@@ -102,6 +103,7 @@ class GoogleSheets:
 
 				geodata = dict()
 				self.params['address'] = data["Address"]
+				map_url = None
 				try:
 					req = requests.get(self.GOOGLE_MAPS_API_URL, params=self.params)
 					res = req.json()
@@ -111,12 +113,14 @@ class GoogleSheets:
 					geodata['lat'] = result['geometry']['location']['lat']
 					geodata['lng'] = result['geometry']['location']['lng']
 					geodata['address'] = result['formatted_address']
-					self.map_URL = self.map_URL + '@' + str(geodata['lat']) + ',' + str(geodata['lng']) + ',16z'
+					map_url = self.map_URL + '@' + str(geodata['lat']) + ',' + str(geodata['lng']) + ',16z'
+					print(map_url)
 				except Exception as e:
 					return "Error trying to get latt and long " + str(data['Name']) + "\nError Message:\t" + str(e)
 
 				row_values = []
 				for key in self.sheet_columns:
+					
 					if key in data.keys():
 						row_values.append(data[key])
 					else:
@@ -125,7 +129,7 @@ class GoogleSheets:
 						elif geodata and key == 'Long':
 							row_values.append(geodata['lng'])
 						elif geodata and key == 'URL':
-							row_values.append(self.map_URL)
+							row_values.append(map_url)
 						else:
 							row_values.append(None)
 				try:
