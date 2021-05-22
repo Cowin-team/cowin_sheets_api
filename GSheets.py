@@ -31,15 +31,18 @@ class GoogleSheets:
 		self.sheet_columns = ['Name', 'Address', 'lat', 'Long', 'URL', 'COVID Beds', 'Oxygen Beds', 'ICU', 'Ventilator Beds', 'LAST UPDATED', 'Contact', 'Source URL']
 
 	def update_bulk(self, bulk_data):
-
+		errors = []
 		for data in bulk_data:
 			resp = self.update(data)
 			print(resp)
 			time.sleep(self.ping_wait)
 			if "Error" in resp:
-				return resp
+				errors.append({'data': data, 'resp': resp})
 
-		return {"Sucess":bulk_data}
+		if len(errors) > 0:
+			return errors
+		else:
+			return {"Sucess":bulk_data}
 
 	def update(self, data):
 		print("\n\n", data, "\n")
