@@ -47,12 +47,11 @@ class GoogleSheets:
             resp = self.update(hospital)
             resp_list.append(resp)
 
-            if 'message' in resp:
-                log('Successfully updated sheet [%s] hospital [%s]. Message: [%s]' %
-                    (hospital['Sheet Name'], hospital['Name'], resp['message']))
-            elif 'error' in resp:
-                log('Error updating [%s] hospital [%s]. Error: [%s]' %
-                    (hospital['Sheet Name'], hospital['Name'], resp['error']))
+            # if 'message' in resp:
+            #     log('Successfully updated sheet [%s] hospital [%s]. Message: [%s]' %
+            #         (hospital['Sheet Name'], hospital['Name'], resp['message']))
+            if 'error' in resp:
+                log('Error updating. Data: [%s] Error: [%s]' % (json.dumps(hospital), resp['error']))
 
             time.sleep(self.ping_wait)
 
