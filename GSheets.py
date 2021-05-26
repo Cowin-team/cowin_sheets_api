@@ -39,21 +39,24 @@ class GoogleSheets:
                               'Ventilator Beds', 'LAST UPDATED', 'Contact', 'Source URL']
 
     def update_bulk(self, bulk_data):
-        resp = []
+        resp_list = []
 
         for hospital in bulk_data:
-            log('Updating hospital: [%s]' % hospital['Name'])
+            log('Updating sheet: [%s] hospital: [%s]' % (hospital['Sheet Name'], hospital['Name']))
 
-            resp.append(self.update(hospital))
+            resp = self.update(hospital)
+            resp_list.append(resp)
 
             if 'message' in resp:
-                log('Successfully updated [%s]. Message: [%s]' % (hospital['Name'], resp['message']))
+                log('Successfully updated sheet [%s] hospital [%s]. Message: [%s]' %
+                    (hospital['Sheet Name'], hospital['Name'], resp['message']))
             elif 'error' in resp:
-                log('Error updating [%s]. Message: [%s]' % (hospital['Name'], resp['message']))
+                log('Error updating [%s] hospital [%s]. Message: [%s]' %
+                    (hospital['Sheet Name'], hospital['Name'], resp['message']))
 
             time.sleep(self.ping_wait)
 
-        return resp
+        return resp_list
 
     def update(self, hospital):
         name_alphanumeric = re.sub(r'\W+', '', hospital['Name']).lower()
