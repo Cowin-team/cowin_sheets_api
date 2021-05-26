@@ -51,8 +51,8 @@ class GoogleSheets:
                 log('Successfully updated sheet [%s] hospital [%s]. Message: [%s]' %
                     (hospital['Sheet Name'], hospital['Name'], resp['message']))
             elif 'error' in resp:
-                log('Error updating [%s] hospital [%s]. Message: [%s]' %
-                    (hospital['Sheet Name'], hospital['Name'], resp['message']))
+                log('Error updating [%s] hospital [%s]. Error: [%s]' %
+                    (hospital['Sheet Name'], hospital['Name'], resp['error']))
 
             time.sleep(self.ping_wait)
 
