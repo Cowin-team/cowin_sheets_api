@@ -1,14 +1,13 @@
 import json
 from flask import Flask, request, jsonify, make_response
-from GSheets import GoogleSheets
 from flask_cors import CORS, cross_origin
-import time
+
+import GSheets
 
 app = Flask(__name__)
 
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
-sheets = GoogleSheets()
 
 
 @app.route('/', methods=['GET'])
@@ -24,9 +23,9 @@ def health():
 @app.route('/update', methods=['POST'])
 @cross_origin()
 def get_record():
-    if request.method == "POST":  # The actual request following the preflight
+    if request.method == "POST":
         record = json.loads(request.data)
-        resp = sheets.update(record)
+        resp = GSheets.update(record)
         return handle_response(resp)
 
     return handle_response({"error": "error occurred"})
@@ -35,9 +34,9 @@ def get_record():
 @app.route('/updateBulk', methods=['POST'])
 @cross_origin()
 def get_bulk_record():
-    if request.method == "POST":  # The actual request following the preflight
+    if request.method == "POST":
         record = json.loads(request.data)
-        resp = sheets.update_bulk(record)
+        resp = GSheets.update_bulk(record)
         return handle_response(resp)
 
     return handle_response({"error": "error occurred"})
