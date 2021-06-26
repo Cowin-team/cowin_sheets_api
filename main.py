@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify, make_response
 from GSheets import GoogleSheets
 from flask_cors import CORS, cross_origin
 import time
+
 app = Flask(__name__)
 
 cors = CORS(app)
@@ -27,9 +28,8 @@ def get_record():
         record = json.loads(request.data)
         resp = sheets.update(record)
         return handle_response(resp)
-    
-    return handle_response({"error": "error occurred"})
 
+    return handle_response({"error": "error occurred"})
 
 
 @app.route('/updateBulk', methods=['POST'])
@@ -39,14 +39,27 @@ def get_bulk_record():
         record = json.loads(request.data)
         resp = sheets.update_bulk(record)
         return handle_response(resp)
-    
+
+    return handle_response({"error": "error occurred"})
+
+
+@app.route('/updateVaccinationCenterBulk', methods=['POST'])
+@cross_origin()
+def update_vaccine_cente_bulk():
+    if request.method == "POST":  # The actual request following the preflight
+        record = json.loads(request.data)
+        resp = sheets.update_vaccine_bulk(record)
+        return handle_response(resp)
+
     return handle_response({"error": "error occurred"})
 
 
 def handle_response(response={}, status=200):
     if "error" in response:
         return make_response(jsonify(response)), 500 if status == 200 else status
+
     return make_response(jsonify(response)), status
 
+
 if __name__ == '__main__':
-   app.run(debug = True)
+    app.run(debug=True)
