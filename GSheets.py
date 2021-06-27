@@ -233,6 +233,8 @@ class GoogleSheets:
                     sheet.share(os.getenv('DEBUG_EMAIL'), perm_type='user', role='writer')
                     sheet_instance = sheet.get_worksheet(0)
                     sheet_instance.insert_row(self.vaccination_center_sheet_columns, 1)
+                else:
+                    raise gspread.exceptions.SpreadsheetNotFound("{} not found".format(vaccination_center["Sheet Name"]))
 
             # get the first sheet of the Spreadsheet
 
