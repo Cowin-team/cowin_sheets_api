@@ -43,9 +43,9 @@ class GoogleSheets:
         self.vaccination_center_sheet_columns = [
             "Center ID",
             "Name",
-            "Address",
             "Lat",
             "Long",
+            "Address",
             "District",
             "State",
             "Pincode",
