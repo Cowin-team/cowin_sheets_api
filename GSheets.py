@@ -1,5 +1,4 @@
 # importing the required libraries
-import os
 import gspread
 import pandas as pd
 from oauth2client.service_account import ServiceAccountCredentials
@@ -10,6 +9,7 @@ import requests
 import syslog
 import json
 import copy
+import os
 
 syslog.openlog('csa')
 
