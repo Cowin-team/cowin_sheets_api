@@ -42,6 +42,17 @@ def get_bulk_record():
     return handle_response({"error": "error occurred"})
 
 
+@app.route('/updateVaccinationCenterBulk', methods=['POST'])
+@cross_origin()
+def update_vaccine_cente_bulk():
+    if request.method == "POST":
+        record = json.loads(request.data)
+        resp = GSheets.update_vaccine_bulk(record)
+        return handle_response(resp)
+
+    return handle_response({"error": "error occurred"})
+
+
 def handle_response(response={}, status=200):
     if "error" in response:
         return make_response(jsonify(response)), 500 if status == 200 else status

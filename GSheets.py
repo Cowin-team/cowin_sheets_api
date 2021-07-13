@@ -7,6 +7,8 @@ import re
 import requests
 import syslog
 import json
+import os
+import copy
 
 syslog.openlog('csa')
 
@@ -22,6 +24,33 @@ PING_WAIT = 1
 SHEET_COLUMNS = ['Name', 'Address', 'lat', 'Long', 'URL', 'COVID Beds', 'Oxygen Beds', 'ICU', 'Ventilator Beds',
                  'LAST UPDATED', 'Contact', 'Source URL']
 
+VACCINATION_CENTER_SHEET_COLUMNS = [
+    "Center ID",
+    "Name",
+    "Lat",
+    "Long",
+    "Address",
+    "District",
+    "State",
+    "Pincode",
+    "Block Name",
+    "Fee Type",
+    "Opening Time",
+    "Closing Time",
+    "LAST UPDATED",
+    "COVISHIELD Min Age 45 Dose-1 Availability",
+    "COVISHIELD Min Age 45 Dose-2 Availability",
+    "COVISHIELD Min Age 18 Dose-1 Availability",
+    "COVISHIELD Min Age 18 Dose-2 Availability",
+    "COVAXIN Min Age 45 Dose-1 Availability",
+    "COVAXIN Min Age 45 Dose-2 Availability",
+    "COVAXIN Min Age 18 Dose-1 Availability",
+    "COVAXIN Min Age 18 Dose-2 Availability",
+    "SPUTNIK Min Age 45 Dose-1 Availability",
+    "SPUTNIK Min Age 45 Dose-2 Availability",
+    "SPUTNIK Min Age 18 Dose-1 Availability",
+    "SPUTNIK Min Age 18 Dose-2 Availability",
+]
 
 def log(msg):
     syslog.syslog(msg)
@@ -166,6 +195,121 @@ def update(hospital, client=None):
                 return resp
             except Exception as e:
                 resp['error'] = 'Error inserting new row: [%s] Error: [%s]' % (str(hospital['Name']), str(e))
+                return resp
+    except Exception as e:
+        resp['error'] = 'Error: [%s]' % str(e)
+        return resp
+
+
+def update_vaccine_bulk(bulk_data):
+
+    client = gspread.authorize(CREDS)
+    resp_list = []
+
+    for vaccination_center in bulk_data:
+        log('Updating sheet: [%s] vaccination center: [%s]' % (vaccination_center['Sheet Name'], vaccination_center['Name']))
+
+        resp = update_vaccine(vaccination_center, client)
+        resp_list.append(resp)
+
+        if 'error' in resp:
+            log('Error updating. Data: [%s] Error: [%s]' % (json.dumps(vaccination_center), resp['error']))
+
+        time.sleep(PING_WAIT)
+
+    return resp_list
+
+def update_vaccine(vaccination_center, client=None):
+
+    if client is None:
+        client = gspread.authorize(CREDS)
+
+    print("updating {}:{}".format(vaccination_center["Sheet Name"],vaccination_center["Name"]))
+    resp = copy.deepcopy(vaccination_center)
+    
+    try:
+
+        try:
+            sheet = client.open(vaccination_center['Sheet Name'])
+            sheet_instance = sheet.get_worksheet(0)
+        except gspread.exceptions.SpreadsheetNotFound:
+            if os.getenv('DEBUG_EMAIL') is not None:
+                print('spreadsheet not found, DEBUG_EMAIL found, creating spreadsheet')
+                sheet = client.create(title=vaccination_center['Sheet Name'])
+                sheet.add_worksheet(title="Sheet 1", rows="100", cols=str(len(VACCINATION_CENTER_SHEET_COLUMNS)))
+                sheet.share(os.getenv('DEBUG_EMAIL'), perm_type='user', role='writer')
+                sheet_instance = sheet.get_worksheet(0)
+                sheet_instance.insert_row(VACCINATION_CENTER_SHEET_COLUMNS, 1)
+            else:
+                raise gspread.exceptions.SpreadsheetNotFound("{} not found".format(vaccination_center["Sheet Name"]))
+
+        # get the first sheet of the Spreadsheet
+
+        # get all the records of the hospital
+        records_data = sheet_instance.get_all_records()
+
+        # convert the json to dataframe
+        records_df = pd.DataFrame.from_dict(records_data)
+    except Exception as e:
+        print(e)
+        resp['error'] = 'Error Reading sheets. Sheet Name: [%s] Error: [%s]' % (vaccination_center['Sheet Name'], str(e))
+        return resp
+
+    update_vaccination_center = False
+    if not records_df.empty:
+        index_list = records_df[(records_df['Center ID'] == vaccination_center["Center ID"])].index
+        if len(index_list):
+            update_vaccination_center = True
+
+    try:
+        if update_vaccination_center:
+
+            records_df['LAST UPDATED'] = pd.to_datetime(records_df['LAST UPDATED'], format='%d-%m-%Y %H:%M:%S')
+
+            is_update = False
+
+            if vaccination_center['Check LAST UPDATED']:
+                is_update = records_df['LAST UPDATED'][index_list[0]] < datetime.strptime(vaccination_center['LAST UPDATED'], '%Y-%m-%d %H:%M:%S')
+            is_diff = False
+            row = records_df[records_df['Center ID'] == vaccination_center["Center ID"]]
+            row_cols = row.columns
+
+            for col in row_cols:
+                if col in vaccination_center.keys():
+                    # Check if there is a diff between the hospital and the sheet for this row
+                    if row[col].values[0] != vaccination_center[col]:
+                        row[col] = vaccination_center[col]
+                        is_diff = True
+
+            if is_diff or is_update:
+                try:
+                    sheet_instance.delete_row(int(index_list[0]) + 2)
+                    sheet_instance.insert_row(row.values[0].tolist(), index=int(index_list[0]) + 2)
+                    resp['message'] = 'Edited row: [%s]' % str(vaccination_center['Name'])
+                    return resp
+                except Exception as e:
+                    resp['error'] = 'Error editing row: [%s] Error: [%s]' % (str(vaccination_center['Name']), str(e))
+                    return resp
+            else:
+                resp['message'] = 'The sheet has the latest update, request rejected'
+                return resp
+        else:
+
+            vaccination_center["URL"] = MAP_URL + '@' + str(vaccination_center['Lat']) + ',' + str(vaccination_center['Long']) + ',16z'
+
+            row_values = []
+            for key in VACCINATION_CENTER_SHEET_COLUMNS:
+
+                if key in vaccination_center.keys():
+                    row_values.append(vaccination_center[key])
+                else:
+                    row_values.append(None)
+            try:
+                sheet_instance.insert_row(row_values, index=len(records_df.index) + 2)
+                resp['message'] = 'Inserted row: [%s]' % str(vaccination_center['Name'])
+                return resp
+            except Exception as e:
+                resp['error'] = 'Error inserting new row: [%s] Error: [%s]' % (str(vaccination_center['Name']), str(e))
                 return resp
     except Exception as e:
         resp['error'] = 'Error: [%s]' % str(e)
